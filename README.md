@@ -26,3 +26,14 @@ A lima connector, to use VMs created by limactl.
 ```
 
 **Solution:** `uv run pyinfra INVETORY pysetmeup.deploys.rclone`
+
+
+### Module executed as expected when run as `pyinfra <xxx> src/pysetmeup/zzz.py`
+
+If you have defined a `depploy` function, decorated by the `pyinfra.api.deploy` decorator, to execute it automatically, use this approach:
+
+```python
+# Add this line in the end
+if __name__ in {"builtins", "__main__"}:
+    deploy()
+```
