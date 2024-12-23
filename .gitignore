@@ -10,4 +10,5 @@ wheels/
 .venv
 
 # Inventory files
-inv*.py
+inv.py
+!src/*/*.py
