@@ -3,40 +3,19 @@ from pyinfra.operations import server
 from pyinfra.operations import git
 from pyinfra.operations import files
 from pyinfra import host
-from pyinfra.facts.server import LinuxName, Which
+from pyinfra.facts.server import Command
 
 from pyinfra.api import deploy
-from pysetmeup.parts import bashrc_d_directory
+from pysetmeup.parts import bashrc_d_directory, fish, direnv
 
 
 @deploy("setup a user")
 def deploy():
     user = host.data.get("user", getpass.getuser())
+    direnv.deploy()
+    bashrc_d_directory.deploy(user=user)
 
-    bashrc_d_directory.deploy()
-    git.deploy()
-
-    if host.get_fact(LinuxName) == "RedHat":
-        if not host.get_fact(Which, command="fish"):
-            # Fish from RedHat is a bit old
-            # see https://packages.fedoraproject.org/pkgs/fish/fish/
-            # dnf.packages(
-            #     name="Install Friendly Interactive Shell 🐟",
-            #     packages=["fish"],
-            #     # update=True,
-            # )
-            ...
-        else:
-            server.shell(
-                name="Install Recent version of fish 🐟 using WebInstaller for user",
-                commands=["curl -sS https://webi.sh/fish | sh"],
-                _su_user="nahuel",
-            )
-            # # Modify bashrc to drop into Fish
-            # file.block(
-            #     ...
-            # )
-        # if not host.get_fact(Which, "mosh"):
+    fish.deploy(_su_user=user)
 
     git.repo(
         name="tmux configuration from gpakosz",
@@ -61,10 +40,13 @@ def deploy():
         _su_user=user,
     )
 
+    # TODO: Should we do it only in interactive sessions like
+    # in the ArchLinux wiki?
+    shell = host.get_fact(Command, "which fish")
     server.user(
         name="Set the shell",
         user=user,
-        shell="/usr/bin/fish",
+        shell=shell,
     )
 
     files.directory(
@@ -108,3 +90,7 @@ def deploy():
         commands=f"chmod 0440 /etc/sudoers.d/sudo_{user}",
         # sudo=True
     )
+
+
+if __name__ in {"builtins", "__main__"}:
+    deploy()
