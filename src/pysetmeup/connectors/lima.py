@@ -6,12 +6,12 @@ from pyinfra.api.command import StringCommand
 from pyinfra.api.arguments import ConnectorArguments
 import subprocess
 import json
-from typing import TYPE_CHECKING, Optional, Dict, Any, Union, Unpack
+from typing import TYPE_CHECKING, Any, Unpack
 
 if TYPE_CHECKING:
     from pyinfra.api.arguments import ConnectorArguments
     from pyinfra.api.command import StringCommand
-    from pyinfra.api.host import Host, HostData
+    from pyinfra.api.host import Host
     from pyinfra.api.state import State
 
 
@@ -28,7 +28,7 @@ class LimaConnector(BaseConnector):
             *_, self.instance_name = host.name.split("/")
         else:
             *_, self.instance_name = host.name
-            
+
         if not self.instance_name:
             raise InventoryError("No Lima instance name provided!")
 
@@ -38,7 +38,7 @@ class LimaConnector(BaseConnector):
             raise InventoryError("No docker lima VM ID provided!")
 
         yield (
-            "@lima/{0}".format(name),
+            f"@lima/{name}",
             {"lima_identifier": name},
             ["@lima"],
         )
@@ -72,14 +72,14 @@ class LimaConnector(BaseConnector):
     def run_shell_command(
         self,
         command: StringCommand,
-        stdin: Optional[str] = None,
-        timeout: Optional[int] = None,
+        stdin: str | None = None,
+        timeout: int | None = None,
         get_pty: bool = False,
         *args,
         **kwargs,
     ) -> tuple:
         """Execute a shell command in the Lima VM."""
-        breakpoint()
+
         try:
             cmd = ["lima", "-n", self.instance_name]
 
@@ -120,7 +120,7 @@ class LimaConnector(BaseConnector):
             return "unknown"
 
     @staticmethod
-    def generate_data() -> Dict[str, Any]:
+    def generate_data() -> dict[str, Any]:
         """Generate data about available Lima VMs."""
         try:
             result = subprocess.run(
@@ -152,7 +152,7 @@ class LimaConnector(BaseConnector):
 
     def put_file(
         self,
-        filename_or_io: Union[str, IOBase],
+        filename_or_io: str | IOBase,
         remote_filename: str,
         *args,
         **arguments: Unpack["ConnectorArguments"],

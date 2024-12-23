@@ -19,7 +19,7 @@ A lima connector, to use VMs created by limactl.
 ## Common issues
 
 
-### 💥 No such module 
+### 💥 No such module
 
 ```console
 -> pyinfra error: No such module: pyinfra.operations.pysetmeup.deploys.rclone

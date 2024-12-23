@@ -25,8 +25,7 @@ def test_multiple_distros(request, image, top_level):
         command,
         shell=True,
         cwd=top_level,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
+        capture_output=True,
     )
     assert docker_detached.returncode == 0, f"{command} failed"
 

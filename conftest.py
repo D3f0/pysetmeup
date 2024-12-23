@@ -1,6 +1,5 @@
-import functools
 from pathlib import Path
-from typing import Callable
+from collections.abc import Callable
 import pytest
 import subprocess
 import shlex
@@ -27,8 +26,7 @@ def start_container(request) -> Callable[[str], str]:
         image = "alpine"
         proc = subprocess.run(
             shlex.split(f"docker run --rm -d {image} -- sh -c 'sleep infinity'"),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            capture_output=True,
         )
         return proc.stdout.decode().strip()
 

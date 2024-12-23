@@ -2,7 +2,6 @@ from pathlib import Path
 import requests
 import tarfile
 import zipfile
-from typing import Optional, List
 import shutil
 import tempfile
 import platform
@@ -51,9 +50,11 @@ def get_system_info() -> dict:
         "is_64bit": sys.maxsize > 2**32,
     }
 
-import hunter
 
-@hunter.wrap()
+# import hunter
+
+
+# @hunter.wrap()
 def score_asset(asset_name: str, system_info: dict) -> int:
     """
     Score an asset based on how well it matches the current system.
@@ -83,9 +84,9 @@ def score_asset(asset_name: str, system_info: dict) -> int:
 
 def download_release_binary(
     repo: str,
-    version: Optional[str] = "latest",
+    version: str | None = "latest",
     output_dir: str = "downloads",
-    binary_pattern: Optional[str] = None,
+    binary_pattern: str | None = None,
 ) -> Path:
     """
     Download and extract binaries from GitHub release assets using a temporary directory.

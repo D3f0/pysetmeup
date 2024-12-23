@@ -9,5 +9,5 @@ wheels/
 # Virtual environments
 .venv
 
-# Inventory files 
+# Inventory files
 inv*.py

@@ -1,5 +1,4 @@
 import getpass
-from textwrap import dedent
 from pyinfra.operations import server
 from pyinfra.operations import git
 from pyinfra.operations import files
@@ -8,7 +7,6 @@ from pyinfra.facts.server import LinuxName, Which
 
 from pyinfra.api import deploy
 from pysetmeup.parts import bashrc_d_directory
-from pysetmeup.parts import git
 
 
 @deploy("setup a user")
@@ -18,9 +16,7 @@ def deploy():
     bashrc_d_directory.deploy()
     git.deploy()
 
-    
     if host.get_fact(LinuxName) == "RedHat":
-        
         if not host.get_fact(Which, command="fish"):
             # Fish from RedHat is a bit old
             # see https://packages.fedoraproject.org/pkgs/fish/fish/

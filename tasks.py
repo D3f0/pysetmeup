@@ -1,10 +1,7 @@
 from io import StringIO
-import json
 from pathlib import Path
-import subprocess
 from textwrap import dedent
-from typing import Optional
-from invoke import task, Context, Task, Result
+from invoke import task, Context, Task
 from invoke.collection import Collection
 
 
@@ -13,7 +10,6 @@ config = {"vm": {"name": "dev-deploy-test"}}
 
 @task()
 def vm_down(ctx: Context, vm_name: str = "") -> None:
-    breakpoint()
     vm_name = vm_name or ctx.config.vm.name
     ctx.run(f"limactl stop {vm_name}")
 
@@ -70,30 +66,30 @@ def vm_up(ctx: Context, vm_name: str = "") -> None:
 )
 def pyinfra(
     ctx: Context,
-    invenotry,
-    operations,
+    invenotry="",
+    operations="",
     verbose: int = 0,
     dry: bool = False,
     yes: bool = False,
-    limit: Optional[str] = None,
-    fail_percent: Optional[int] = None,
-    data: Optional[str] = None,
-    group_data: Optional[str] = None,
+    limit: str | None = None,
+    fail_percent: int | None = None,
+    data: str | None = None,
+    group_data: str | None = None,
     config: str = "config.py",
-    chdir: Optional[str] = None,
+    chdir: str | None = None,
     sudo: bool = False,
-    sudo_user: Optional[str] = None,
+    sudo_user: str | None = None,
     use_sudo_password: bool = False,
-    su_user: Optional[str] = None,
-    shell_executable: Optional[str] = None,
-    parallel: Optional[int] = None,
+    su_user: str | None = None,
+    shell_executable: str | None = None,
+    parallel: int | None = None,
     no_wait: bool = False,
     serial: bool = False,
-    ssh_user: Optional[str] = None,
-    ssh_port: Optional[int] = None,
-    ssh_key: Optional[Path] = None,
-    ssh_key_password: Optional[str] = None,
-    ssh_password: Optional[str] = None,
+    ssh_user: str | None = None,
+    ssh_port: int | None = None,
+    ssh_key: Path | None = None,
+    ssh_key_password: str | None = None,
+    ssh_password: str | None = None,
     debug: bool = False,
     debug_all: bool = False,
     debug_facts: bool = False,
@@ -188,6 +184,7 @@ DOCKERFILE_CONTENTS = dedent(
     """
 )
 
+
 @task()
 def build_fish_in_rhel(ctx: Context):
     ctx.run(
@@ -195,9 +192,11 @@ def build_fish_in_rhel(ctx: Context):
         in_stream=StringIO(DOCKERFILE_CONTENTS),
     )
 
+
 @task()
 def cat(ctx: Context):
     ctx.run("cat -n", in_stream=StringIO(DOCKERFILE_CONTENTS))
+
 
 ns = Collection()
 
