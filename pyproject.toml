@@ -1,0 +1,44 @@
+[project]
+name = "pysetmeup"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Nahuel Defossé", email = "D3f0@users.noreply.github.com}
+]
+requires-python = ">=3.9"
+dependencies = [
+    "iterfzf>=1.4.0.54.3",
+    "loguru>=0.7.3",
+    "pdbpp>=0.10.3",
+    "pyinfra>=3.1.1",
+    "pyyaml>=6.0.2",
+    "typing-extensions>=4.12.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "hunter>=3.7.0",
+    "invoke>=2.2.0",
+    "pdbpp>=0.10.3",
+    "pytest-docker>=3.1.1",
+    "pytest>=8.3.4",
+    "rich>=13.9.4",
+    # Python part of RHEL/centos-stream will not install ipython
+    # "ipython>=8.30.0",
+    "docker>=7.1.0",
+    "pytest-xdist>=3.6.1",
+    "pytest-sugar>=1.0.0",
+]
+
+
+# Connectors
+
+[project.entry-points.'pyinfra.connectors']
+# Key = Entry point name
+# Value = module_path:class_name
+lima = 'pysetmeup.connectors.lima:LimaConnector'
