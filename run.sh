@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+set -e
 
 install_uv() {
     # Check if the 'uv' binary is installed
@@ -71,6 +72,7 @@ install_dev_deps() {
     yum install -y python3-devel gcc kernel-devel kernel-headers make diffutils file
   fi
 }
+
 install_dev_deps
 install_curl
 install_uv
