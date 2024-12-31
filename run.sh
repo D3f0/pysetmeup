@@ -65,6 +65,13 @@ install_python3() {
   echo "Python3 has been successfully installed."
 }
 
+install_dev_deps() {
+  if [ "$(arch)" = "aarch64" ] || [ -n "${INSTALL_DEV_DEPS:-1}" ]; then
+    echo "Install dependencies for ARM64"
+    yum install -y python3-devel gcc kernel-devel kernel-headers make diffutils file
+  fi
+}
+install_dev_deps
 install_curl
 install_uv
 install_python3
