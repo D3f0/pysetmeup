@@ -6,7 +6,13 @@ from pyinfra.api.command import StringCommand
 from pyinfra.api.arguments import ConnectorArguments
 import subprocess
 import json
-from typing import TYPE_CHECKING, Any, Unpack
+
+try:
+    from typing import TYPE_CHECKING, Any, Unpack
+except ImportError:
+    from typing_extensions import Any, Unpack
+    from typing import TYPE_CHECKING
+
 
 if TYPE_CHECKING:
     from pyinfra.api.arguments import ConnectorArguments
