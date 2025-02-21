@@ -1,9 +1,28 @@
+#!/usr/bin/env -S uv run --script
+
+"""
+You can run this module with invoke (uv tool install invoke) or directly as a script
+with `./tasks.py`.
+
+"""
+# /// script
+# dependencies = [
+#   "invoke",
+#   "rich",
+#   "pdbpp",
+# ]
+# ///
+
+import ast
+import subprocess
+import sys
 from io import StringIO
 from pathlib import Path
 from textwrap import dedent
-from invoke import task, Context, Task
-from invoke.collection import Collection
 
+from invoke import Context, Task, task
+from invoke.collection import Collection
+from invoke.util import debug
 
 config = {"vm": {"name": "dev-deploy-test"}}
 
@@ -18,144 +37,6 @@ def vm_down(ctx: Context, vm_name: str = "") -> None:
 def vm_up(ctx: Context, vm_name: str = "") -> None:
     vm_name = vm_name or ctx.config.vm.name
     ctx.run(f"limactl start {vm_name}")
-
-
-# @task()
-# def run(ctx: Context, where: str = "", what: str = "", query=False) -> None:
-#     if not where or query:
-#         options = ctx.run(
-#             "grep -R '^Host' ~/.ssh/ | grep -v '*' | awk '{print $2}'"
-#         ).stdout.strip().splitlines()
-
-#         host = iterfzf(options, sort=True, query=query and f"{where}")
-#     if not what or query :
-#         options = list(str(p) for p in Path(".").glob("src/setups"))
-#         iterfzf(options, sort=True, query=query and host)
-
-
-@task(
-    help={
-        "verbose": "Print meta (-v), input (-vv) and output (-vvv)",
-        "dry": "Don't execute operations on the target hosts",
-        "yes": "Execute operations immediately without prompt or checking for changes",
-        "limit": "Restrict the target hosts by name and group name",
-        "fail_percent": "% of hosts that need to fail before exiting early",
-        "data": "Override data values, format key=value",
-        "group_data": "Paths to load additional group data from (overrides matching keys)",
-        "config": "Specify config file to use (default: config.py)",
-        "chdir": "Set the working directory before executing",
-        "sudo": "Whether to execute operations with sudo",
-        "sudo_user": "Which user to sudo when sudoing",
-        "use_sudo_password": "Whether to use a password with sudo",
-        "su_user": "Which user to su to",
-        "shell_executable": 'Shell to use (ex: "sh", "cmd", "ps")',
-        "parallel": "Number of operations to run in parallel",
-        "no_wait": "Don't wait between operations for hosts",
-        "serial": "Run operations in serial, host by host",
-        "ssh_user": "SSH user to connect as",
-        "ssh_port": "SSH port to connect to",
-        "ssh_key": "SSH Private key filename",
-        "ssh_key_password": "SSH Private key password",
-        "ssh_password": "SSH password",
-        "debug": "Print debug logs from pyinfra",
-        "debug_all": "Print debug logs from all packages including pyinfra",
-        "debug_facts": "Print facts after generating operations and exit",
-        "debug_operations": "Print operations after generating and exit",
-    },
-    positional=["inventory", "operations"],
-)
-def pyinfra(
-    ctx: Context,
-    invenotry="",
-    operations="",
-    verbose: int = 0,
-    dry: bool = False,
-    yes: bool = False,
-    limit: str | None = None,
-    fail_percent: int | None = None,
-    data: str | None = None,
-    group_data: str | None = None,
-    config: str = "config.py",
-    chdir: str | None = None,
-    sudo: bool = False,
-    sudo_user: str | None = None,
-    use_sudo_password: bool = False,
-    su_user: str | None = None,
-    shell_executable: str | None = None,
-    parallel: int | None = None,
-    no_wait: bool = False,
-    serial: bool = False,
-    ssh_user: str | None = None,
-    ssh_port: int | None = None,
-    ssh_key: Path | None = None,
-    ssh_key_password: str | None = None,
-    ssh_password: str | None = None,
-    debug: bool = False,
-    debug_all: bool = False,
-    debug_facts: bool = False,
-    debug_operations: bool = False,
-):
-    args = []
-
-    # Handle verbose flag specially (-v, -vv, -vvv)
-    if verbose > 0:
-        args.append("-" + "v" * verbose)
-
-    # Boolean flags
-    if dry:
-        args.append("--dry")
-    if yes:
-        args.append("--yes")
-    if sudo:
-        args.append("--sudo")
-    if use_sudo_password:
-        args.append("--use-sudo-password")
-    if no_wait:
-        args.append("--no-wait")
-    if serial:
-        args.append("--serial")
-    if debug:
-        args.append("--debug")
-    if debug_all:
-        args.append("--debug-all")
-    if debug_facts:
-        args.append("--debug-facts")
-    if debug_operations:
-        args.append("--debug-operations")
-
-    # Optional value arguments
-    if limit:
-        args.append(f"--limit {limit}")
-    if fail_percent is not None:
-        args.append(f"--fail-percent {fail_percent}")
-    if data:
-        args.append(f"--data {data}")
-    if group_data:
-        args.append(f"--group-data {group_data}")
-    if config and config != "config.py":  # Only add if non-default
-        args.append(f"--config {config}")
-    if chdir:
-        args.append(f"--chdir {chdir}")
-    if sudo_user:
-        args.append(f"--sudo-user {sudo_user}")
-    if su_user:
-        args.append(f"--su-user {su_user}")
-    if shell_executable:
-        args.append(f"--shell-executable {shell_executable}")
-    if parallel is not None:
-        args.append(f"--parallel {parallel}")
-    if ssh_user:
-        args.append(f"--ssh-user {ssh_user}")
-    if ssh_port is not None:
-        args.append(f"--ssh-port {ssh_port}")
-    if ssh_key:
-        args.append(f"--ssh-key {ssh_key}")
-    if ssh_key_password:
-        args.append(f"--ssh-key-password {ssh_key_password}")
-    if ssh_password:
-        args.append(f"--ssh-password {ssh_password}")
-    options = " ".join(args)
-    ctx.run(f"uv run pyinfra {invenotry} {operations} {options}")
 
 
 DOCKERFILE_CONTENTS = dedent(
@@ -193,9 +74,111 @@ def build_fish_in_rhel(ctx: Context):
     )
 
 
-@task()
-def cat(ctx: Context):
-    ctx.run("cat -n", in_stream=StringIO(DOCKERFILE_CONTENTS))
+@task(
+    autoprint=True,
+)
+def list_deploys(ctx: Context, where="./src/pysetmeup", query="") -> str:
+    """Find all the @deploy decorated functions inside this module, helps"""
+    path = Path(where)
+
+    files = list(path.rglob("*.py"))
+    output = []
+    for file in files:
+        debug(file)
+
+        with file.open("r") as f:
+            tree = ast.parse(f.read(), filename=file)
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                if not node.decorator_list:
+                    continue
+                try:
+                    decorators = {dec.func.id for dec in node.decorator_list}
+                except AttributeError:
+                    continue
+                if {"deploy"} & decorators:
+                    relative = file.relative_to(path)
+                    dotted = str(relative).replace("/", ".").removesuffix(".py")
+                    importable_name = f"pysetmeup.{dotted}.{node.name}"
+                    debug(f"{file=}")
+                    debug(f"{dotted=}")
+                    output.append(importable_name)
+                    continue
+    return "\n".join(output)
+
+
+@task(autoprint=True)
+def select(
+    ctx: Context,
+    query: str = "",
+    multi: bool = False,
+    select_1: bool = False,
+    one_line: bool = False,
+) -> str:
+    """Selects a deploy using fzf"""
+    arguments = ""
+    if query:
+        arguments = f"{arguments} --query {query}"
+    if multi:
+        arguments = f"{arguments} --multi"
+    if select_1:
+        arguments = f"{arguments} -1"
+
+    fzf = subprocess.run(
+        f"uvx invoke list-deploys | fzf {arguments}",
+        shell=True,
+        stdout=subprocess.PIPE,
+    )
+
+    selection = fzf.stdout.decode().strip()
+    if not selection:
+        sys.exit("No task selected")
+    if one_line:
+        debug("Making all selections a single line.")
+        selection = selection.replace("\n", " ")
+    return selection
+
+
+@task(
+    help={
+        "inventory": "Where to run the commands, defaults to @local",
+        "debug": "Enables pyinfra DEBUG",
+        "yes": "Applies operations without confirmation",
+        "operation_": "Operations to perform, if not provided will provide a list",
+        "query": "When no operation is provided, will show a list of operations to perform",
+        "multiple": "Allows to select multiple operations using [Tab] the selector is displayed.",
+        "uv_args": "Pass arguments to uv",
+        "refresh": "Shorthand for --uv-args --isolated, to force refresh the code",
+    }
+)
+def run_deploy(
+    ctx: Context,
+    inventory="@local",
+    debug=True,
+    yes=False,
+    operation_: list[str] = [],
+    query: str = "",
+    multiple=False,
+    refresh=False,
+    uv_args=[],
+) -> None:
+    """Runs the operation by default in @local host, and the in"""
+    if not operation_:
+        operation_ = select(ctx, query=query, multi=multiple).split("\n")
+    arguments = ""
+    if debug:
+        arguments = f"{arguments} --debug"
+    if yes:
+        arguments = f"{arguments} --yes"
+    if refresh and "--refresh" not in uv_args:
+        uv_args.append("--refresh")
+    uv_args_ = " ".join(uv_args)
+    for operation in operation_:
+        ctx.run(
+            f"uv tool run {uv_args_} --with . pyinfra {inventory} {operation} {arguments}",
+            pty=True,
+        )
 
 
 ns = Collection()
@@ -203,9 +186,17 @@ ns = Collection()
 for name, element in list(
     locals().items()
 ):  # list prevent the local iter vars to change the locals
-    if isinstance(object, Task):
+    if isinstance(element, Task):
         if name.count("up"):
             continue
+
         ns.add_task(element)
 
 ns.configure(config)
+
+
+if __name__ == "__main__":
+    from invoke.program import Program
+
+    p = Program(version="0.0.1", namespace=ns)
+    p.run()

@@ -37,3 +37,12 @@ If you have defined a `depploy` function, decorated by the `pyinfra.api.deploy` 
 if __name__ in {"builtins", "__main__"}:
     deploy()
 ```
+
+## Debugging with `uvx`
+
+Although `uvx` is a great way to debug, bear in mind that your changes may not be
+reflected when editing files. A simple workaround is to use `--no-cache`, for example:
+
+```shell
+uvx --no-cache --with . pyinfra
+```
