@@ -49,4 +49,5 @@ def deploy():
             """
         ),
         _su_user=user,
+        try_prevent_shell_expansion=True,  # needed for $file
     )
