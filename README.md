@@ -4,6 +4,13 @@ Setup fish shell, zoxide, tmux + scritps, Docker, etc.
 
 It has some specific configurations for RedHat hosts like EPEL repo (and Docker)
 
+## Executing a script
+
+This repo has broken down the different software installations into python packages
+that have a @deploy() decorated function. Most of the time this function is called
+just deploy. For example, to run `uv run pyinfra <target> pysetmeup.parts.uv.deploy`
+
+
 ## Experimental features
 
 ### Connector
