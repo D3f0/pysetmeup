@@ -21,12 +21,16 @@ def deploy():
     if mounted_mac and home.endswith(".linux"):
         kw_args["sudo"] = True
 
-    files.directory(
-        name="Create ~/.bashrc.d/ for organizing bash customizations",
-        path=f"{home}/.bashrc.d/",
-        user=user,
-        # _su_user=user,
-    )
+    if (
+        host.get_fact(Command, f"test -d {home}/.bashrc.d/ || echo missing")
+        == "missing"
+    ):
+        files.directory(
+            name="Create ~/.bashrc.d/ for organizing bash customizations",
+            path=f"{home}/.bashrc.d/",
+            user=user,
+            # _su_user=user,
+        )
 
     files.block(
         name="Ensure ~/.bashrc sources all the files in ~/.bashrc.d/*",
