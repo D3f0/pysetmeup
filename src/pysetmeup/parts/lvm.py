@@ -28,7 +28,7 @@ from typing import TypedDict
 from pyinfra import host
 from pyinfra.api import deploy
 from pyinfra.facts.server import LinuxName, Command
-from pyinfra.operations import server
+from pyinfra.operations.server import dnf, apt, shell
 from pyinfra import logger
 
 
@@ -64,7 +64,7 @@ def deploy_lvm_in_redhat():
         host.get_fact(Command, command="rpm -qa | grep lvm2 || echo missing")
         == "missing"
     ):
-        server.dnf.packages("lvm2")
+        dnf.packages(packages=["lvm2"], name="Installing lvm2")
     else:
         logger.info("lmv2 already present")
 
@@ -75,7 +75,7 @@ def deploy_lvm_in_debian():
         host.get_fact(Command, command="dpkg -l | grep lvm2 || echo missing")
         == "missing"
     ):
-        server.apt.packages("lvm2")
+        apt.packages(packages=["lvm2"])
     else:
         logger.info("lmv2 already present")
 
@@ -107,7 +107,8 @@ def deploy():
     if not linux_name:
         logger.warning("Can't install LVM in non linux OS")
         return
-    if linux_name == "RedHat":
+    logger.info(f"{linux_name=}")
+    if linux_name in {"RedHat", "CentOS"}:
         deploy_lvm_in_redhat()
     elif linux_name == "Debian":
         deploy_lvm_in_debian()
@@ -120,10 +121,13 @@ def deploy():
         return
 
     devices = get_vgcreate_devices()
+    if not devices:
+        logger.warning("No devices found for vgcreate")
+        return
     args = " ".join(f"/dev/{dev['name']}" for dev in devices)
     command = f"vgcreate {vg_name} {args}"
     logger.info(f"{command=}")
-    server.shell(name="Run vgcreate", commands=[command])
+    shell(name="Run vgcreate", commands=[command])
 
 
 if __name__ in {"builtins", "__main__"}:
