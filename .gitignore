@@ -12,3 +12,4 @@ wheels/
 # Inventory files
 inv.py
 !src/*/*.py
+inventory.py
