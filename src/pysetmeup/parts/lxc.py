@@ -64,6 +64,36 @@ def deploy():
             logger.info("All required packages for LXC installed")
         server.shell("systemctl enable --now libvirtd", name="Enabling libvirtd")
         server.shell("systemctl enable --now lxc", name="Enabling lxc")
+        files.block(
+            "/etc/dnsmasq.d/lxc.conf",
+            content=dedent(
+                """
+            # DNSmasq configuration for LXC
+            interface=lxcbr0
+            dhcp-range=10.0.3.2,10.0.3.254,255.255.255.0,12h
+            dhcp-option=3,10.0.3.1
+            dhcp-option=6,10.0.3.1
+            server=8.8.8.8
+            server=8.8.4.4
+            domain=lxc
+            dhcp-host=container1,10.0.3.10
+            """
+            ),
+        )
+
+        files.block(
+            "/etc/NetworkManager/conf.d/no-dnsmasq.conf",
+            dedent("""
+            [main]
+            dns=none
+            """),
+            name="Disabling DHCP in NetworkManager",
+        )
+        server.shell(
+            "systemctl restart NetworkManager",
+            name="Restarting network manager w/o DHCP",
+        )
+        server.shell("systemctl enable --now dnsmasq", name="Enabling DHCP for LXC")
         # # TODO check idempotency
         # files.block(
         #     "/etc/sysconfig/network-scripts/ifcfg-lxcbr0",
