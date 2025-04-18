@@ -24,19 +24,22 @@ CONTENT = dedent(
 
 
 @deploy(name="Set Ctrl+L mode in bash once you're in vi mode")
-def deploy():
+def deploy(user: str | None = ""):
     """
 
     Source: https://unix.stackexchange.com/questions/104094/is-there-any-way-to-enable-ctrll-to-clear-screen-when-set-o-vi-is-set
     """
-    home = host.get_fact(Home)
-    user = host.get_fact(User)
+    user = user or host.get_fact(
+        User,
+    )
+    home = host.get_fact(Home, user=user)
     path = f"{home}/.inputrc"
     file_status = host.get_fact(Command, command=f'test -f {path} || echo "MISSING"')
     if file_status == "MISSING":
         inputrc = ""
     else:
         inputrc = host.get_fact(Command, command=f"cat {path}")
+
     if not inputrc or CONTENT not in inputrc:
         new_content = f"{inputrc}\n{CONTENT}"
         src = io.StringIO(new_content)
