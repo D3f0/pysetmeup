@@ -33,7 +33,8 @@ def deploy(user: str = None):
                 bashrc_d_directory.deploy(name="Settings up bash's rc configs")
                 if (
                     host.get_fact(
-                        Command, "test -f $HOME/.bashrc.d/99_direnv.sh || echo missing"
+                        Command,
+                        "test -f $HOME/.bashrc.d/99_direnv.sh || echo missing",
                     )
                     == "missing"
                 ):
