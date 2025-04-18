@@ -1,14 +1,29 @@
+"""
+WIP heuristics binary downloader
+"""
+
 from pathlib import Path
 import requests
 import tarfile
 import zipfile
 import shutil
 import tempfile
-import platform
-import sys
+from pyinfra.facts.server import Kernel, Command
+from pyinfra import host
+from pyinfra.api import deploy
+from pyinfra import logger
+from typing import TypedDict
 
 
-def get_system_info() -> dict:
+class SystemInfo(TypedDict):
+    os: str
+    os_patterns: list[str]
+    arch: str
+    arch_patterns: list[str]
+    is_64bits: bool
+
+
+def get_system_info() -> SystemInfo:
     """
     Get current system's architecture and OS information.
     Returns a dict with normalized platform information.
@@ -25,8 +40,8 @@ def get_system_info() -> dict:
         "Windows": ["windows", "win"],
     }
 
-    system = platform.system()
-    machine = platform.machine().lower()
+    system = host.get_fact(Kernel)
+    machine = host.get_fact(Command, command="arch")
 
     # Determine architecture
     detected_arch = None
@@ -35,7 +50,7 @@ def get_system_info() -> dict:
             detected_arch = arch
             break
 
-    return {
+    ret = {
         "os": system,
         "os_patterns": os_map.get(system, []),
         "arch": detected_arch or machine,
@@ -47,8 +62,10 @@ def get_system_info() -> dict:
             ),
             [],
         ),
-        "is_64bit": sys.maxsize > 2**32,
+        "is_64bit": host.get_fact(Command, "getconf LONG_BIT") == 64,
     }
+    logger.info(f"system info = {ret}")
+    return ret
 
 
 # import hunter
@@ -82,6 +99,7 @@ def score_asset(asset_name: str, system_info: dict) -> int:
     return score
 
 
+@deploy(name="Download release binary")
 def download_release_binary(
     repo: str,
     version: str | None = "latest",
@@ -107,8 +125,9 @@ def download_release_binary(
     # Validate and parse repo format
     if "/" not in repo:
         raise ValueError('Repository must be in format "owner/repo"')
+    repo = repo.strip("/")
     owner, repo_name = repo.split("/", 1)
-
+    logger.info(f"Downloading {repo=}")
     # Create output directory if it doesn't exist
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -201,17 +220,3 @@ def download_release_binary(
             return output_path
 
     raise ValueError("No suitable binaries found in the release assets")
-
-
-# Example usage
-if __name__ == "__main__":
-    try:
-        binary_path = download_release_binary(
-            repo="sharkdp/fd",  # Now using single string format
-            version="latest",  # or specific version like "v8.7.0"
-            binary_pattern="fd",
-            output_dir="downloads",
-        )
-        print(f"Binary extracted to: {binary_path}")
-    except Exception as e:
-        print(f"Error: {e}")
