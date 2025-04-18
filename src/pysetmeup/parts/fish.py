@@ -22,7 +22,7 @@ def deploy(version="3.6.0", user=None):
     linux_name = host.get_fact(LinuxName)
     if install:
         if host.get_fact(LinuxName) == "RedHat":
-            server.shell('dnf groupinstall -y "Development Tools"')
+            server.shell('sudo dnf groupinstall -y "Development Tools"')
             dnf.packages(
                 [
                     "cmake",
@@ -33,6 +33,7 @@ def deploy(version="3.6.0", user=None):
                     "which",
                     "git",
                 ],
+                _sudo=True,
             )
             files.directory("/src")
             git.repo(

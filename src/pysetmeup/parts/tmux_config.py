@@ -32,6 +32,11 @@ def deploy(user: str | None = ""):
         name=f"Setting .tmux.conf in {home} if not present...",
         _su_user=user,
     )
+    # server.shell(
+    #     name="Set the local overrides for tmux",
+    #     commands="test -f ~/.tmux.conf.local || cp ~/.tmux/.tmux.conf.local ~/",
+    #     _su_user=user,
+    # )
     server.shell(
         dedent(f"""
         if [ ! -f {home}/.tmux.conf.local ]; then

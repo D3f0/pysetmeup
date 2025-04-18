@@ -51,3 +51,15 @@ def deploy():
         _su_user=user,
         try_prevent_shell_expansion=True,  # needed for $file
     )
+
+    files.block(
+        name="Add ~/.local/bin to the path",
+        path=f"{home}/.bashrc.d/01_path.sh",
+        content=dedent(
+            """
+            export PATH=$HOME/.local/bin:$PATH
+            """
+        ),
+        _su_user=user,
+        try_prevent_shell_expansion=True,  # needed for $file
+    )

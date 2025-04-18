@@ -1,53 +1,47 @@
 from pyinfra import host
 from pyinfra.api import deploy
-from pyinfra.facts import server as server_facts
+from pyinfra.facts.server import Which, LinuxDistribution
 
 
-from pyinfra.operations import apt, yum, apk, brew
-from pyinfra.facts import server
+from pyinfra.operations import apt, apk, brew, server
+from ..helpers.github import download_release_binary
 
 
 @deploy("yq")
-def install():
-    # Detect the operating system
-    os = host.get_fact(server.LinuxDistribution)
-
-    if host.get_fact(server_facts.Which, "yq"):
+def deploy():
+    if host.get_fact(Which, "yq"):
         return
+    os = host.get_fact(server.Os)
 
-    if host.get_fact(server_facts.Os) == "Darwin":
+    if os == "Darwin":
         # MacOS installation using Homebrew
         brew.packages(
             name="Install yq via Homebrew",
             packages=["yq"],
         )
 
-    elif os:
-        distribution = os.get("name", "").lower()
+    elif os == "Linux":
+        distribution_name = host.get_fact(LinuxDistribution)["name"]
 
-        if distribution in ["debian", "ubuntu", "raspbian"]:
+        if distribution_name in ["Debian", "Ubuntu", "Raspbian"]:
             apt.packages(
                 name="Install yq via apt",
                 packages=["yq"],
                 update=True,
             )
 
-        elif distribution in ["rhel", "centos", "fedora"]:
-            # Install EPEL repository first for RedHat-based systems
-            yum.packages(
-                name="Install EPEL repository",
-                packages=["epel-release"],
-            )
+        elif distribution_name in ["RedHat", "CentOS", "CentOS Stream", "Fedora"]:
+            # Not in EPEL repository, need to download binary, using WebInstaller
+            download_release_binary(repo="mikefarah/yq", output_dir="/usr/local/bin/")
 
-            yum.packages(
-                name="Install yq via yum",
-                packages=["yq"],
-            )
-
-        elif distribution == "alpine":
+        elif distribution_name == "Alpine":
             # Alpine Linux installation
             apk.packages(
                 name="Install yq via apk",
                 packages=["yq"],
                 update=True,
             )
+
+
+if __name__ in {"builtins", "__main__"}:
+    deploy()
